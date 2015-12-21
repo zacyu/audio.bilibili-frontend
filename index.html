@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <base href="/" target="_blank">
+    <meta charset="utf-8">
+    <title>哔哩哔哩音频 - bilibili.audio</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="提取并下载哔哩哔哩视频弹幕网中视频的音频.">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="#ec6e8f">
+    <link rel="shortcut icon" href="assets/images/favicon.png">
+    <link rel="stylesheet" href="assets/css/material.min.css" type="text/css">
+    <link rel="stylesheet" href="assets/css/sweetalert.css" type="text/css">
+    <link rel="stylesheet" href="//fonts.lug.ustc.edu.cn/css?family=Roboto:300,400,500,700" type="text/css">
+    <link rel="stylesheet" href="//fonts.lug.ustc.edu.cn/icon?family=Material+Icons" type="text/css">
+    <link rel="stylesheet" href="assets/css/main.min.css" type="text/css">
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/material.min.js"></script>
+    <script src="assets/js/sweetalert.min.js"></script>
+    <script src="assets/js/app.js"></script>
+  </head>
+  <body class="mdl-color--grey-100 mdl-base">
+    <div id="index-layout" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header mdl-layout__header--fixed mdl-color--pink-300 mdl-color-text--primary-contrast">
+        <div class="mdl-layout__header-row">
+          <span class="mdl-layout-title"><img class="top-logo-ico" src="assets/images/logo_white.svg" alt="bili"><img class="top-logo-ico" src="assets/images/logo_white.svg" alt="bili">.audio</span>
+          <div class="mdl-layout-spacer"></div>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+            <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <input class="mdl-textfield__input" type="text" id="search">
+              <label class="mdl-textfield__label" for="search">网址或 av 号</label>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="main-ribbon mdl-color--pink-100"></div>
+      <main class="mdl-layout__content">
+        <div id="main-grid" class="mdl-grid">
+          <div class="mdl-cell mdl-cell--1-col mdl-cell--hide-tablet mdl-cell--hide-phone"></div>
+          <div class="main-content mdl-card mdl-color--white mdl-shadow--4dp content mdl-color-text--grey-800 mdl-cell mdl-cell--10-col">
+            <div id="query" class="center">
+              <h2>哔哩哔哩音频<span>beta</span></h2>
+              <p class="mdl-color-text--grey-500">提取并下载哔哩哔哩视频弹幕网中视频的音频, 请复制粘贴您要下载内容的网址.</p>
+              <br/>
+              <div class="mdl-textfield mdl-js-textfield">
+                <input class="mdl-textfield__input" type="text" id="uri" pattern="http:\/\/www\.bilibili\.com\/video\/av([0-9]+)\/(index_([0-9]+)\.html)?(\?.*)?">
+                <label class="mdl-textfield__label" for="uri">http://www.bilibili.com/av******</label>
+                <span class="mdl-textfield__error">请将您要下载的内容的网址完整地复制并粘贴到这里!</span>
+              </div>
+            </div>
+            <div id="loading-holder" class="center hidden">
+              <img src="assets/images/kaworu.gif"></img>
+              <div class="content">
+                <h3>视频信息读取中, 请稍等...</h3>
+                <h5 class="mdl-color-text--grey-500">根据您的网络状况和服务器负载, 这可能需要一段时间...</h5>
+                <br/>
+                <div class="loading-busy mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="mdl-mini-footer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+        <div class="mdl-mini-footer--left-section">哔哩哔哩, bilibili, 及其标识是上海幻电科技信息有限公司在中国和/或其它国家的商标或注册商标.</div>
+        <div class="mdl-mini-footer--right-section">Copyright © Guguke 2015</div>
+      </footer>
+    </div>
+  </body>
+</html>

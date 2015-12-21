@@ -1,2 +1,2 @@
 # audio.bilibili-frontend
-one-page frontend for bilibili.audio
+single-page frontend for bilibili.audio
