@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="assets/css/sweetalert.css" type="text/css">
     <link rel="stylesheet" href="//fonts.lug.ustc.edu.cn/css?family=Roboto:300,400,500,700" type="text/css">
     <link rel="stylesheet" href="//fonts.lug.ustc.edu.cn/icon?family=Material+Icons" type="text/css">
-    <link rel="stylesheet" href="assets/css/main.min.css" type="text/css">
+    <link rel="stylesheet" href="assets/css/main.css" type="text/css">
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/material.min.js"></script>
     <script src="assets/js/sweetalert.min.js"></script>
@@ -52,13 +52,52 @@
               </div>
             </div>
             <div id="loading-holder" class="center hidden">
-              <img src="assets/images/kaworu.gif"></img>
+              <img class="loading" src="assets/images/kaworu.gif"></img>
               <div class="content">
-                <h3>视频信息读取中, 请稍等...</h3>
-                <h5 class="mdl-color-text--grey-500">根据您的网络状况和服务器负载, 这可能需要一段时间...</h5>
+                <h3 class="mdl-color-text--grey-800">视频信息读取中, 请稍等...</h3>
+                <p class="mdl-color-text--grey-500">根据网络状况和服务器负载, 这可能需要一段时间...</p>
                 <br/>
-                <div class="loading-busy mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+                <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
               </div>
+            </div>
+            <div id="video-info" class="hidden">
+              <section class="mdl-grid mdl-grid--no-spacing">
+                <header class="cover mdl-cell mdl-cell--4-col-desktop mdl-cell--3-col-tablet mdl-cell--4-col-phone mdl-color--teal-100 mdl-color-text--white">
+                  <div class="play_hover">
+                    <i id="play-btn" class="material-icons">play_circle_filled</i>
+                    <div class="mdl-tooltip" for="play-btn">前往哔哩哔哩播放页</div>
+                  </div>
+                </header>
+                <div class="mdl-card mdl-cell mdl-cell--8-col-desktop mdl-cell--5-col-tablet mdl-cell--4-col-phone">
+                  <div id="video-basic-info" class="mdl-card__supporting-text">
+                    <h4 class="title"></h4>
+                    <p class="data">
+                      <span><i class="material-icons">face</i> <span class="author"></span></span>
+                      <span><i class="material-icons">folder_special</i> <span class="type"></span></span>
+                      <span><i class="material-icons">today</i> <span class="date"></span></span>
+                      <span><i class="material-icons">play_circle_outline</i> <span class="play"></span></span>
+                      <span><i class="material-icons">stars</i> <span class="favorites"></span></span>
+                    </p>
+                    <p class="data">
+                      <i class="material-icons">loyalty</i>
+                      <span class="tags"></span>
+                    </p>
+                    <p class="desc"></p>
+                  </div>
+                </div>
+                <div id="audio-info" class="mdl-card mdl-cell mdl-card__actions mdl-card--border mdl-cell--12-col">
+                  <img class="loading active" src="assets/images/kaworu.gif"></img>
+                  <div class="content">
+                    <div class="mdl-card__supporting-text">
+                      <h4><i class="material-icons">music_video</i> 音频转换下载</h4>
+                      <div class="center">
+                        <h3 class="mdl-color-text--grey-800">正在提交任务</h3>
+                        <p class="mdl-color-text--grey-500">根据服务器负载, 这可能需要一段时间...</p>
+                        <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+                      </div>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </div>

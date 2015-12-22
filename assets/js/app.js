@@ -27,10 +27,15 @@ if (videoInfo.valid) {
 window.addEventListener('popstate', function(e) {
   videoInfo = e.state;
   document.title = videoInfo.loaded ? document.title = videoInfo.title + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title : title;
-  loadVideoInfo();
+  if (videoInfo.valid) {
+    loadVideoInfo();
+  } else {
+    showQueryPage();
+  }
 });
 
 function showQueryPage() {
+  ajaxBusy = false;
   videoInfo = {valid: false};
   if (!history.state.valid) {
     history.replaceState(videoInfo, title, '/');
@@ -38,7 +43,9 @@ function showQueryPage() {
     history.pushState(videoInfo, title, '/');
   }
   $('#query').removeClass('hidden');
+  $('#video-info').addClass('hidden');
   $('#loading-holder').addClass('hidden');
+  $('#uri').val('').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
 }
 
 function loadVideoInfoErrorHandler(errorText) {
@@ -73,10 +80,14 @@ function loadVideoInfo() {
   }
   ajaxBusy = true;
   $('#query').addClass('hidden');
+  $('#video-info').addClass('hidden');
   $('#loading-holder').removeClass('hidden');
   $.getJSON('http://api.bilibili.com/view?type=jsonp&appkey=95acd7f6cc3392f3&id=' +
     videoInfo.avid + '&page=' + videoInfo.page + '&batch=true&callback=?',
     function(data) {
+      if (!ajaxBusy) {
+        return false;
+      }
       if (!data.error) {
         videoInfo = $.extend(videoInfo, {
           title: data.title,
@@ -86,7 +97,7 @@ function loadVideoInfo() {
           tags: data.tag.split(','),
           list: data.list,
           author: data.author,
-          time: data.created_at,
+          date: data.created_at,
           play: data.play,
           favorites: data.favorites,
           loaded: true
@@ -97,6 +108,7 @@ function loadVideoInfo() {
         } else {
           history.pushState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
         }
+        renderVideoPage();
       } else {
         loadVideoInfoErrorHandler(data.code + ' (' + data.error + ')');
       }
@@ -119,7 +131,22 @@ function checkURI() {
 }
 
 function renderVideoPage() {
-  // TODO: render page, check conversion status
+  $('#video-info').removeClass('hidden');
+  $('#query').addClass('hidden');
+  $('#loading-holder').addClass('hidden');
+  $('#video-info .cover').css('background-image', 'url(' + videoInfo.cover + ')');
+  $('#video-info .title').text(videoInfo.title);
+  $('#video-info .author').text(videoInfo.author);
+  $('#video-info .type').text(videoInfo.type);
+  $('#video-info .date').text(videoInfo.date);
+  $('#video-info .play').text(videoInfo.play);
+  $('#video-info .favorites').text(videoInfo.favorites);
+  $('#video-info .desc').text(videoInfo.desc);
+  $('#video-info .tags').empty();
+  for (var i in videoInfo.tags) {
+    $('#video-info .tags').append($('<span class="tag">').text(videoInfo.tags[i]).prop('outerHTML') + ' ');
+  }
+  // TODO: check conversion status
 }
 
 $(document).ready(function() {
@@ -127,4 +154,10 @@ $(document).ready(function() {
     loadVideoInfo();
   }
   $('#uri').on('paste', checkURI).keyup('paste', checkURI);
+  $('.mdl-layout-title').click(function() {
+    showQueryPage();
+  });
+  $('#video-info .cover .play_hover').click(function() {
+    window.open('http://www.bilibili.com/av' + videoInfo.avid + '/index_' + videoInfo.page + '.html');
+  });
 });
