@@ -134,6 +134,10 @@ img.loading {
   vertical-align: middle;
 }
 
+#part-dropdown .mdl-menu__container {
+  margin-top: -32px;
+}
+
 #part-dropdown ul {
   max-height: 200px;
   overflow: auto;

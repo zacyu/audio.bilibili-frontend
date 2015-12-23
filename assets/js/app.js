@@ -182,7 +182,7 @@ function renderVideoPage() {
   for (var i in videoInfo.tags) {
     $('#video-info .tags').append($('<span class="tag">').text(videoInfo.tags[i]).prop('outerHTML') + ' ');
   }
-  $('#part-dropdown ul').empty();
+  $('#part-dropdown .mdl-menu__container').remove();
   if (videoInfo.list.length > 1) {
     $('#part-dropdown').show();
     var dropdown = $('<ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="part-btn"></ul>'),
@@ -207,7 +207,6 @@ function renderVideoPage() {
     $('#part-dropdown').append(dropdown);
     window.componentHandler.upgradeElements(dropdown.toArray());
   } else {
-    $('#part-dropdown ul').remove();
     $('#part-dropdown').hide();
   }
   if (videoInfo.ts) {
