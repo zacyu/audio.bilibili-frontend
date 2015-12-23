@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="assets/css/main.css" type="text/css">
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/material.min.js"></script>
+    <script src="assets/js/lz-string.min.js"></script>
     <script src="assets/js/sweetalert.min.js"></script>
     <script src="assets/js/app.js"></script>
   </head>
@@ -71,6 +72,16 @@
                 <div class="mdl-card mdl-cell mdl-cell--8-col-desktop mdl-cell--5-col-tablet mdl-cell--4-col-phone">
                   <div id="video-basic-info" class="mdl-card__supporting-text">
                     <h4 class="title"></h4>
+                    <div id="part-dropdown">
+                      <button id="part-btn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+                        <i class="material-icons" role="presentation">arrow_drop_down</i>
+                      </button>
+                      <div class="mdl-tooltip" for="part-btn">分段选择</div>
+                    </div>
+                    <button id="refresh-btn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+                      <i class="material-icons" role="presentation">refresh</i>
+                    </button>
+                    <div class="mdl-tooltip" for="refresh-btn">刷新本地缓存</div>
                     <p class="data">
                       <span><i class="material-icons">face</i> <span class="author"></span></span>
                       <span><i class="material-icons">folder_special</i> <span class="type"></span></span>

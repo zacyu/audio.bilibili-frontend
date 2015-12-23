@@ -26,7 +26,7 @@ if (videoInfo.valid) {
 
 window.addEventListener('popstate', function(e) {
   videoInfo = e.state;
-  document.title = videoInfo.loaded ? document.title = videoInfo.title + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title : title;
+  document.title = videoInfo.loaded ? document.title = getVideoTitle() + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title : title;
   if (videoInfo.valid) {
     loadVideoInfo();
   } else {
@@ -37,6 +37,7 @@ window.addEventListener('popstate', function(e) {
 function showQueryPage() {
   ajaxBusy = false;
   videoInfo = {valid: false};
+  document.title = title;
   if (!history.state.valid) {
     history.replaceState(videoInfo, title, '/');
   } else {
@@ -46,6 +47,21 @@ function showQueryPage() {
   $('#video-info').addClass('hidden');
   $('#loading-holder').addClass('hidden');
   $('#uri').val('').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
+}
+
+function getVideoTitle() {
+  if (!videoInfo.loaded) {
+    return null;
+  }
+  if (videoInfo.list.length > 1 && videoInfo.list.length >= videoInfo.page) {
+    var title = videoInfo.title + '(' + videoInfo.page + ')';
+    if (videoInfo.list[videoInfo.page - 1].part.length) {
+      title += ' - ' + videoInfo.list[videoInfo.page - 1].part;
+    }
+    return title;
+  } else {
+    return videoInfo.title;
+  }
 }
 
 function loadVideoInfoErrorHandler(errorText) {
@@ -70,12 +86,34 @@ function loadVideoInfoErrorHandler(errorText) {
   });
 }
 
+function setPageState() {
+  document.title = getVideoTitle() + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title;
+  if (history.state.avid === videoInfo.avid && history.state.page === videoInfo.page) {
+    history.replaceState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
+  } else {
+    history.pushState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
+  }
+  renderVideoPage();
+}
+
 function loadVideoInfo() {
   if (ajaxBusy) {
     return false;
   }
+  var cache = localStorage.getItem(videoInfo.avid + '/' + videoInfo.page);
+  if (cache) {
+    try {
+      cache = JSON.parse(window.LZString.decompress(cache));
+      if (parseInt(new Date().getTime()/1000) - cache.ts < 86400) {
+        videoInfo = cache;
+      }
+    } catch (error) {
+      window.console.error('Failed to read cache.', error);
+      localStorage.removeItem(videoInfo.avid + '/' + videoInfo.page);
+    }
+  }
   if (videoInfo.loaded) {
-    renderVideoPage();
+    setPageState();
     return false;
   }
   ajaxBusy = true;
@@ -88,6 +126,7 @@ function loadVideoInfo() {
       if (!ajaxBusy) {
         return false;
       }
+      ajaxBusy = false;
       if (!data.error) {
         videoInfo = $.extend(videoInfo, {
           title: data.title,
@@ -102,13 +141,10 @@ function loadVideoInfo() {
           favorites: data.favorites,
           loaded: true
         });
-        document.title = videoInfo.title + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title;
-        if (history.state.avid === videoInfo.avid && history.state.page === videoInfo.page) {
-          history.replaceState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
-        } else {
-          history.pushState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
-        }
-        renderVideoPage();
+        localStorage.setItem(videoInfo.avid + '/' + videoInfo.page,
+          window.LZString.compress(JSON.stringify($.extend(videoInfo,
+            {ts: parseInt(new Date().getTime()/1000)}))));
+        setPageState();
       } else {
         loadVideoInfoErrorHandler(data.code + ' (' + data.error + ')');
       }
@@ -135,7 +171,7 @@ function renderVideoPage() {
   $('#query').addClass('hidden');
   $('#loading-holder').addClass('hidden');
   $('#video-info .cover').css('background-image', 'url(' + videoInfo.cover + ')');
-  $('#video-info .title').text(videoInfo.title);
+  $('#video-info .title').text(getVideoTitle());
   $('#video-info .author').text(videoInfo.author);
   $('#video-info .type').text(videoInfo.type);
   $('#video-info .date').text(videoInfo.date);
@@ -145,6 +181,39 @@ function renderVideoPage() {
   $('#video-info .tags').empty();
   for (var i in videoInfo.tags) {
     $('#video-info .tags').append($('<span class="tag">').text(videoInfo.tags[i]).prop('outerHTML') + ' ');
+  }
+  $('#part-dropdown ul').empty();
+  if (videoInfo.list.length > 1) {
+    $('#part-dropdown').show();
+    var dropdown = $('<ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="part-btn"></ul>'),
+        clickOnPart = function() {
+      if ($(this).data('page') !== videoInfo.page) {
+        videoInfo = {
+          avid: videoInfo.avid,
+          page: $(this).data('page'),
+          valid: true
+        };
+        loadVideoInfo();
+      }
+    };
+    for (var i in videoInfo.list) {
+      var partName = (parseInt(i) + 1) + '、' + (videoInfo.list[i].part.length ? videoInfo.list[i].part : '分段' + (parseInt(i) + 1)),
+          part = $('<li class="mdl-menu__item"></li>').text(partName).click(clickOnPart).data('page', parseInt(i) + 1);
+      if (parseInt(i) + 1 === videoInfo.page) {
+        part.attr('disabled', true);
+      }
+      dropdown.append(part);
+    }
+    $('#part-dropdown').append(dropdown);
+    window.componentHandler.upgradeElements(dropdown.toArray());
+  } else {
+    $('#part-dropdown ul').remove();
+    $('#part-dropdown').hide();
+  }
+  if (videoInfo.ts) {
+    $('#refresh-btn').show();
+  } else {
+    $('#refresh-btn').hide();
   }
   // TODO: check conversion status
 }
@@ -157,7 +226,19 @@ $(document).ready(function() {
   $('.mdl-layout-title').click(function() {
     showQueryPage();
   });
-  $('#video-info .cover .play_hover').click(function() {
+  $('#video-info .cover .play_hover i').click(function() {
     window.open('http://www.bilibili.com/av' + videoInfo.avid + '/index_' + videoInfo.page + '.html');
+  });
+  $('#refresh-btn').click(function() {
+    if (!videoInfo.valid) {
+      return false;
+    }
+    localStorage.removeItem(videoInfo.avid + '/' + videoInfo.page);
+    videoInfo = {
+      avid: videoInfo.avid,
+      page: videoInfo.page,
+      valid: true
+    };
+    loadVideoInfo();
   });
 });

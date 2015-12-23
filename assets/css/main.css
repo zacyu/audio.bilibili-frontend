@@ -86,7 +86,6 @@ img.loading {
   height: 100%;
   top: 0;
   left: 0;
-  cursor: pointer;
   opacity: 0;
   transition: opacity 0.2s;
   background: rgba(0,0,0,.3);
@@ -103,6 +102,8 @@ img.loading {
   top: calc(50% - 40px);
   left: calc(50% - 40px);
   font-size: 80px;
+  cursor: pointer;
+  outline: none;
 }
 
 #video-info .cover .play_hover:hover i {
@@ -121,6 +122,26 @@ img.loading {
 #video-info h4 i {
   font-size: 26px;
   vertical-align: sub;
+}
+
+#part-dropdown {
+  position: relative;
+  float: right;
+  margin-top: -42px;
+}
+
+#part-dropdown>* {
+  vertical-align: middle;
+}
+
+#part-dropdown ul {
+  max-height: 200px;
+  overflow: auto;
+}
+
+#refresh-btn {
+  float: right;
+  margin-top: -4px;
 }
 
 #video-info .data {
