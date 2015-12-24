@@ -19,9 +19,8 @@ if (/^\/video\/av([0-9]+)\/(index_([0-9]+)\.html)?(\?.*)?$/.test(location.pathna
   }
 }
 if (videoInfo.valid) {
-  history.replaceState(videoInfo, 'av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title, '/' + videoInfo.avid + '/' + videoInfo.page);
-} else {
-  history.replaceState(videoInfo, title, '/');
+  document.title = 'av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title;
+  history.replaceState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
 }
 
 window.addEventListener('popstate', function(e) {
@@ -38,7 +37,7 @@ function showQueryPage() {
   ajaxBusy = false;
   videoInfo = {valid: false};
   document.title = title;
-  if (!history.state.valid) {
+  if (!history.state || !history.state.valid) {
     history.replaceState(videoInfo, title, '/');
   } else {
     history.pushState(videoInfo, title, '/');
@@ -46,7 +45,7 @@ function showQueryPage() {
   $('#query').removeClass('hidden');
   $('#video-info').addClass('hidden');
   $('#loading-holder').addClass('hidden');
-  $('#uri').val('').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
+  $('#uri').val('').focus().closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
 }
 
 function getVideoTitle() {
