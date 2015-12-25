@@ -279,6 +279,11 @@ function loadAudioInfo(taskId) {
         if (!confirmed) {
           return false;
         }
+        $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+        $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+        $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+        $('#audio-info .center h3').text('正在提交任务');
+        $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
         $.ajax('http://bilibili.audio/get.php?aid=' + avid + '&p=' + page, {
           method: 'POST',
           dataType: 'json',
