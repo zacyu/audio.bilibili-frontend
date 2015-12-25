@@ -169,7 +169,6 @@ img.loading.active {
 
 #video-info .data span {
   margin-right: 8px;
-  margin-bottom: 8px;
   white-space: nowrap;
 }
 
@@ -203,6 +202,7 @@ img.loading.active {
 
 #audio-info button {
   margin-right: 8px;
+  margin-bottom: 8px;
   padding: 0 8px;
 }
 
