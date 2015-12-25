@@ -104,7 +104,7 @@
   function setPageState() {
     var videoTitle = getVideoTitle(),
         documentTitle = videoTitle ? videoTitle + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title : 'av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title;
-    if (history.state && history.state.avid === videoInfo.avid && history.state.page === videoInfo.page) {
+    if (!history.state || history.state && history.state.avid === videoInfo.avid && history.state.page === videoInfo.page) {
       history.replaceState(videoInfo, documentTitle, '/' + videoInfo.avid + '/' + videoInfo.page);
     } else {
       history.pushState(videoInfo, documentTitle, '/' + videoInfo.avid + '/' + videoInfo.page);
