@@ -18,7 +18,7 @@
     <script src="assets/js/material.min.js"></script>
     <script src="assets/js/lz-string.min.js"></script>
     <script src="assets/js/sweetalert.min.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/app.min.js"></script>
   </head>
   <body class="mdl-color--grey-100 mdl-base">
     <div id="index-layout" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
@@ -53,7 +53,7 @@
               </div>
             </div>
             <div id="loading-holder" class="center hidden">
-              <img class="loading" src="assets/images/kaworu.gif"></img>
+              <img class="loading active" src="assets/images/kaworu.gif"></img>
               <div class="content">
                 <h3 class="mdl-color-text--grey-800">视频信息读取中, 请稍等...</h3>
                 <p class="mdl-color-text--grey-500">根据网络状况和服务器负载, 这可能需要一段时间...</p>
@@ -105,6 +105,15 @@
                         <h3 class="mdl-color-text--grey-800"></h3>
                         <p class="mdl-color-text--grey-500"></p>
                         <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+                      </div>
+                      <div class="button-group hidden">
+                        <button id="download-btn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
+                          <i class="material-icons" role="presentation">open_in_new</i> <span class="download"></span>
+                        </button>
+                        <button id="reload-btn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+                          <i class="material-icons" role="presentation">refresh</i> 刷新服务器端存储
+                        </button>
+                        <div class="mdl-tooltip" for="reload-btn">当视频内容更新时使用</div>
                       </div>
                   </div>
                 </div>

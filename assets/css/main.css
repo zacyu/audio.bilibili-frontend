@@ -38,10 +38,15 @@ main {
 }
 
 img.loading {
-    position: absolute;
-    left: calc(50% - 300px);
-    top: 0;
-    opacity: .2;
+  position: absolute;
+  left: calc(50% - 300px);
+  top: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+img.loading.active {
+  opacity: .2;
 }
 
 #main-grid {
@@ -184,12 +189,18 @@ img.loading {
 }
 
 #audio-info {
-  height: 400px;
   padding: 0;
+  min-height: 140px;
 }
 
 #audio-info .center {
+  height: 247px;
   margin-top: 80px;
+}
+
+#audio-info button {
+  margin-right: 8px;
+  padding: 0 8px;
 }
 
 .main-content {

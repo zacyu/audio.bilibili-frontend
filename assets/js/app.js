@@ -59,10 +59,8 @@ function showQueryPage() {
   $('#query').removeClass('hidden');
   $('#video-info').addClass('hidden');
   $('#loading-holder').addClass('hidden');
-  var uMTF = $('#uri').val('').focus().closest('.mdl-textfield').get(0).MaterialTextfield;
-  if (uMTF) {
-      uMTF.boundUpdateClassesHandler();
-  }
+  $('#uri').val('').focus();
+  $('#uri').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
 }
 
 function getVideoTitle() {
@@ -183,10 +181,10 @@ function checkURI() {
     var matches = /\/video\/av([0-9]+)\/(index_([0-9]+)\.html)?(\?.*)?$/.exec($('#uri').val());
     videoInfo = {
       avid: parseInt(matches[1]),
-      page: parseInt(matches[3])
+      page: parseInt(matches[3]),
+      valid: true
     };
     videoInfo.page = videoInfo.page > 0 && isFinite(videoInfo.page) ? videoInfo.page : 1;
-    videoInfo.valid = true;
     loadVideoInfo();
   }
 }
@@ -196,8 +194,15 @@ function renderAudioBlock(taskId) {
     return false;
   }
   window.currentTask = false;
-  console.log(videoInfo.audio);
-  // TODO: show download link
+  $('#audio-info .center').addClass('hidden');
+  $('#audio-info .button-group').removeClass('hidden');
+  $('#audio-info .loading').removeClass('active');
+  $('#download-btn').off('click').click(function() {
+    window.open(videoInfo.audio.url);
+  }).find('.download').text('下载 ' + videoInfo.audio.format +
+    ' 音频 (比特率: ' + videoInfo.audio.quality + ' kbit/s)');
+  $('#reload-btn').prop('disabled', parseInt(new Date().getTime()/1000) -
+    parseInt(videoInfo.audio.time) < 153600);
 }
 
 function loadAudioInfo(taskId) {
@@ -209,6 +214,9 @@ function loadAudioInfo(taskId) {
     renderAudioBlock(taskId);
     return false;
   }
+  $('#audio-info .loading').addClass('active');
+  $('#audio-info .center').removeClass('hidden');
+  $('#audio-info .button-group').addClass('hidden');
   $.ajax('http://bilibili.audio/get.php', {
     method: 'GET',
     dataType: 'json',
@@ -279,11 +287,6 @@ function loadAudioInfo(taskId) {
         if (!confirmed) {
           return false;
         }
-        $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
-        $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
-        $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
-        $('#audio-info .center h3').text('正在提交任务');
-        $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
         $.ajax('http://bilibili.audio/get.php?aid=' + avid + '&p=' + page, {
           method: 'POST',
           dataType: 'json',
@@ -360,7 +363,7 @@ function renderVideoPage() {
   }
   $('#part-dropdown .mdl-menu__container').remove();
   if (videoInfo.list.length > 1) {
-    $('#part-dropdown').show();
+    $('#part-dropdown').removeClass('hidden');
     var dropdown = $('<ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="part-btn"></ul>'),
         clickOnPart = function() {
       if ($(this).data('page') !== videoInfo.page) {
@@ -383,12 +386,12 @@ function renderVideoPage() {
     $('#part-dropdown').append(dropdown);
     window.componentHandler.upgradeElements(dropdown.toArray());
   } else {
-    $('#part-dropdown').hide();
+    $('#part-dropdown').addClass('hidden');
   }
   if (videoInfo.ts) {
-    $('#refresh-btn').show();
+    $('#refresh-btn').removeClass('hidden');
   } else {
-    $('#refresh-btn').hide();
+    $('#refresh-btn').addClass('hidden');
   }
   window.currentTask = generateUUID();
   loadAudioInfo(window.currentTask);
@@ -403,9 +406,15 @@ $(document).ready(function() {
   if (videoInfo.valid) {
     loadVideoInfo();
   } else {
-    showQueryPage();
+    $('#query').on('mdl-componentupgraded', function(e) {
+      console.log('focus');
+      setTimeout(function() {
+        showQueryPage();
+      }, 0);
+      $('#query').off('mdl-componentupgraded');
+    });
   }
-  $('#uri').on('paste', checkURI).keyup('paste', checkURI);
+  $('#uri').on('paste', checkURI).keyup(checkURI);
   $('.mdl-layout-title').click(function() {
     showQueryPage();
   });
@@ -423,5 +432,62 @@ $(document).ready(function() {
       valid: true
     };
     loadVideoInfo();
+  });
+  $('#reload-btn').click(function() {
+    if ($(this).prop('disabled')) {
+      return false;
+    }
+    window.swal({
+      title: '刷新服务器端存储',
+      text: '刷新服务器端存储将导致原音频内容再新的转换任务完成前不可下载, ' +
+        '请仅在改分段视频内容变更的时候使用该功能. 如果只是增加了新的分段, ' +
+        '您只需通过页面右上角的刷新按钮刷新本地缓存即可. ' +
+        '滥用此功能将会导致您被 bilibili.audio 禁止使用. 确认要继续吗?',
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
+    }, function(confirmed) {
+      if (confirmed) {
+        $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+        $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+        $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+        $('#audio-info .center h3').text('正在提交任务');
+        $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
+        $.ajax('http://bilibili.audio/get.php?aid=' + avid + '&p=' + page, {
+          method: 'POST',
+          dataType: 'json',
+          timeout: 1000,
+          data: {
+            retry: 1
+          }
+        }).always(function() {
+          $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+          $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+          $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+          $('#audio-info .center h3').text('正在提交任务');
+          $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
+          window.currentTask = generateUUID();
+          loadAudioInfo(taskId);
+        });
+      }
+    });
+  });
+  $('#search').keyup(function(e) {
+    if (e.keyCode == 13) {
+      var matches = $(this).blur().val().match(/av([0-9]+)(\/)?(index_([0-9]+)\.html)?(\?.*)?$/i);
+      $(this).val('').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
+      if (matches) {
+        videoInfo = {
+          avid: parseInt(matches[1]),
+          page: parseInt(matches[4]),
+          valid: true
+        };
+        videoInfo.page = videoInfo.page > 0 && isFinite(videoInfo.page) ? videoInfo.page : 1;
+        loadVideoInfo();
+      } else {
+        showQueryPage();
+      }
+    }
   });
 });
