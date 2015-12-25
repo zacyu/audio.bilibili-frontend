@@ -19,6 +19,8 @@ header, main {
   width: 100%;
   height: 40vh;
   flex-shrink: 0;
+  background-image: url(https://c.hime.io/images/yodW.png);
+  background-position: center center;
 }
 
 main {
@@ -167,6 +169,7 @@ img.loading.active {
 
 #video-info .data span {
   margin-right: 8px;
+  margin-bottom: 8px;
   white-space: nowrap;
 }
 
