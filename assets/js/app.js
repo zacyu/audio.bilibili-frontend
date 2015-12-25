@@ -227,9 +227,11 @@
         p: page
       }
     }).done(function(data) {
-      $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
-      $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
-      $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+      if ($('#audio-info .center .mdl-progress').get(0).MaterialProgress) {
+        $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+        $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+        $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+      }
       $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
       switch(parseInt(data.process)) {
         case 0:
@@ -249,8 +251,10 @@
           $('#audio-info .center h3').text('正在下载视频文件');
           $('#audio-info .center p').text('音频格式: ' + data.format +
             ' (' + data.quality + ' kbit/s)' + ' 当前进度: ' + data.progress + '%');
-          $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
-          $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(data.progress);
+          if ($('#audio-info .center .mdl-progress').get(0).MaterialProgress) {
+            $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+            $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(data.progress);
+          }
           break;
         case 4:
           $('#audio-info .center h3').text('正在保存音频文件');
@@ -333,7 +337,7 @@
             countDown = true;
             countDownAlert();
           }
-      } else if (parseInt(data.status) !== 5) {
+      } else if (parseInt(data.process) !== 5) {
         setTimeout(function() {
           loadAudioInfo(taskId);
         }, 500);
@@ -402,9 +406,11 @@
     }
     window.currentTask = generateUUID();
     loadAudioInfo(window.currentTask);
-    $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
-    $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
-    $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+    if ($('#audio-info .center .mdl-progress').get(0).MaterialProgress) {
+      $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+      $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+      $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+    }
     $('#audio-info .center h3').text('正在提交任务');
     $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
   }
@@ -455,9 +461,11 @@
         cancelButtonText: '取消'
       }, function(confirmed) {
         if (confirmed) {
-          $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
-          $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
-          $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+          if ($('#audio-info .center .mdl-progress').get(0).MaterialProgress) {
+            $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+            $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+            $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+          }
           $('#audio-info .center h3').text('正在提交任务');
           $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
           $.ajax('http://bilibili.audio/get.php?aid=' + videoInfo.avid + '&p=' + videoInfo.page, {
@@ -468,9 +476,11 @@
               retry: 1
             }
           }).always(function() {
-            $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
-            $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
-            $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+            if ($('#audio-info .center .mdl-progress').get(0).MaterialProgress) {
+              $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+              $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+              $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+            }
             $('#audio-info .center h3').text('正在提交任务');
             $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
             window.currentTask = generateUUID();
@@ -480,7 +490,7 @@
       });
     });
     $('#search').keyup(function(e) {
-      if (e.keyCode == 13) {
+      if (e.keyCode === 13) {
         var matches = $(this).blur().val().match(/av([0-9]+)(\/)?(index_([0-9]+)\.html)?(\?.*)?$/i);
         $(this).val('').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
         if (matches) {
