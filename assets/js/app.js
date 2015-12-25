@@ -18,10 +18,6 @@ if (/^\/video\/av([0-9]+)\/(index_([0-9]+)\.html)?(\?.*)?$/.test(location.pathna
     videoInfo.valid = true;
   }
 }
-if (videoInfo.valid) {
-  document.title = 'av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title;
-  history.replaceState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
-}
 
 window.addEventListener('popstate', function(e) {
   videoInfo = e.state;
@@ -33,19 +29,40 @@ window.addEventListener('popstate', function(e) {
   }
 });
 
+// http://stackoverflow.com/a/8809472/1907337
+function generateUUID(){
+    var d = new Date().getTime();
+    if(window.performance && typeof window.performance.now === "function"){
+        d += window.performance.now(); //use high-precision timer if available
+    }
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c==='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
+
 function showQueryPage() {
   ajaxBusy = false;
+  window.currentTask = false;
+  if ($('.sweet-alert').is('.visible')) {
+      window.swal.close();
+  }
   videoInfo = {valid: false};
-  document.title = title;
   if (!history.state || !history.state.valid) {
     history.replaceState(videoInfo, title, '/');
   } else {
     history.pushState(videoInfo, title, '/');
   }
+  document.title = title;
   $('#query').removeClass('hidden');
   $('#video-info').addClass('hidden');
   $('#loading-holder').addClass('hidden');
-  $('#uri').val('').focus().closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
+  var uMTF = $('#uri').val('').focus().closest('.mdl-textfield').get(0).MaterialTextfield;
+  if (uMTF) {
+      uMTF.boundUpdateClassesHandler();
+  }
 }
 
 function getVideoTitle() {
@@ -86,19 +103,28 @@ function loadVideoInfoErrorHandler(errorText) {
 }
 
 function setPageState() {
-  document.title = getVideoTitle() + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title;
-  if (history.state.avid === videoInfo.avid && history.state.page === videoInfo.page) {
-    history.replaceState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
+  var videoTitle = getVideoTitle(),
+      documentTitle = videoTitle ? videoTitle + ' - av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title : 'av' + videoInfo.avid + 'p' + videoInfo.page + ' - ' + title;
+  if (history.state && history.state.avid === videoInfo.avid && history.state.page === videoInfo.page) {
+    history.replaceState(videoInfo, documentTitle, '/' + videoInfo.avid + '/' + videoInfo.page);
   } else {
-    history.pushState(videoInfo, document.title, '/' + videoInfo.avid + '/' + videoInfo.page);
+    history.pushState(videoInfo, documentTitle, '/' + videoInfo.avid + '/' + videoInfo.page);
   }
-  renderVideoPage();
+  document.title = documentTitle;
+  if (videoTitle) {
+      renderVideoPage();
+  }
 }
 
 function loadVideoInfo() {
   if (ajaxBusy) {
     return false;
   }
+  window.currentTask = false;
+  if ($('.sweet-alert').is('.visible')) {
+      window.swal.close();
+  }
+  setPageState();
   var cache = localStorage.getItem(videoInfo.avid + '/' + videoInfo.page);
   if (cache) {
     try {
@@ -165,6 +191,152 @@ function checkURI() {
   }
 }
 
+function renderAudioBlock(taskId) {
+  if (taskId !== window.currentTask) {
+    return false;
+  }
+  window.currentTask = false;
+  console.log(videoInfo.audio);
+  // TODO: show download link
+}
+
+function loadAudioInfo(taskId) {
+  if (taskId !== window.currentTask) {
+    return false;
+  }
+  var avid = videoInfo.avid, page = videoInfo.page;
+  if (videoInfo.audio) {
+    renderAudioBlock(taskId);
+    return false;
+  }
+  $.ajax('http://bilibili.audio/get.php', {
+    method: 'GET',
+    dataType: 'json',
+    timeout: 5000,
+    data: {
+      aid: avid,
+      p: page
+    }
+  }).done(function(data) {
+    $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+    $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+    $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+    $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
+    switch(parseInt(data.process)) {
+      case 1:
+        $('#audio-info .center h3').text('正在解析视频信息');
+        break;
+      case 2:
+        $('#audio-info .center h3').text('正在获取视频信息');
+        break;
+      case 3:
+        data.progress = data.progress ? parseFloat(data.progress) : 0;
+        if (data.progress > 100) {
+          data.progress = 100;
+        }
+        $('#audio-info .center h3').text('正在下载视频文件');
+        $('#audio-info .center p').text('音频格式: ' + data.format +
+          ' (' + data.quality + ' kbit/s)' + ' 当前进度: ' + data.progress + '%');
+        $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+        $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(data.progress);
+        break;
+      case 4:
+        $('#audio-info .center h3').text('正在保存音频文件');
+        $('#audio-info .center p').text('音频格式: ' + data.format +
+          ' (' + data.quality + ' kbit/s)');
+        break;
+      case 5:
+        if (parseInt(data.status)) {
+          videoInfo.audio = data;
+          localStorage.setItem(videoInfo.avid + '/' + videoInfo.page,
+            window.LZString.compress(JSON.stringify(videoInfo)));
+          renderAudioBlock(taskId);
+          break;
+        } else {
+          $('#audio-info .center h3').text('发生异常错误');
+        }
+        break;
+      default:
+        window.console.error('Failed to get audio info for task ' +
+          window.currentTask + ' (av' + avid + 'p' + page + ')!');
+        window.setTimeout(function() {
+          loadAudioInfo(taskId);
+        }, 1000);
+        break;
+    }
+    var showRetryAlert = function() {
+      if (taskId !== window.currentTask) {
+        return false;
+      }
+      window.swal({
+        title: '音频文件提取/转换失败',
+        text: '点击「重试」重新提交任务',
+        type: 'error',
+        showCancelButton: true,
+        confirmButtonText: '重试',
+        cancelButtonText: '取消',
+      }, function(confirmed) {
+        if (!confirmed) {
+          return false;
+        }
+        $.ajax('http://bilibili.audio/get.php?aid=' + avid + '&p=' + page, {
+          method: 'POST',
+          dataType: 'json',
+          timeout: 1000,
+          data: {
+            retry: 1
+          }
+        }).always(function() {
+          loadAudioInfo(taskId);
+        });
+      });
+    }, countDownAlert = function() {
+      if (!countDown || taskId !== window.currentTask) {
+        return false;
+      }
+      window.swal({
+        title: '音频文件提取/转换失败',
+        text: '请等待 ' + (120 + parseInt(data.time) - parseInt(new Date().getTime()/1000)) +
+          ' 秒后重试...',
+        type: 'error',
+        showCancelButton: true,
+        showConfirmButton: false,
+        cancelButtonText: '取消'
+      }, function() {
+        countDown = false;
+      });
+      if (parseInt(new Date().getTime()/1000) - parseInt(data.time) <= 120) {
+        setTimeout(function() {
+          countDownAlert();
+        }, 1000);
+      } else {
+        showRetryAlert();
+      }
+    }, countDown = false;
+    if (parseInt(data.status) === 0 && (parseInt(data.process) < 3 ||
+      parseInt(data.process) === 5 || parseInt(data.retry) === 10)) {
+        if (parseInt(new Date().getTime()/1000) - parseInt(data.time) > 120) {
+          showRetryAlert();
+        } else {
+          countDown = true;
+          countDownAlert();
+        }
+    } else if (parseInt(data.status) !== 5) {
+      setTimeout(function() {
+        loadAudioInfo(taskId);
+      }, 500);
+    }
+  }).error(function(e, status) {
+    if (status === 'timeout') {
+      loadAudioInfo(taskId);
+    } else {
+      window.setTimeout(function() {
+        loadAudioInfo(taskId);
+      }, 1000);
+    }
+  });
+}
+
 function renderVideoPage() {
   $('#video-info').removeClass('hidden');
   $('#query').addClass('hidden');
@@ -213,12 +385,20 @@ function renderVideoPage() {
   } else {
     $('#refresh-btn').hide();
   }
-  // TODO: check conversion status
+  window.currentTask = generateUUID();
+  loadAudioInfo(window.currentTask);
+  $('#audio-info .center .mdl-progress').removeClass('mdl-progress__indeterminate');
+  $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
+  $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
+  $('#audio-info .center h3').text('正在提交任务');
+  $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
 }
 
 $(document).ready(function() {
   if (videoInfo.valid) {
     loadVideoInfo();
+  } else {
+    showQueryPage();
   }
   $('#uri').on('paste', checkURI).keyup('paste', checkURI);
   $('.mdl-layout-title').click(function() {

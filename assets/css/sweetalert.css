@@ -173,10 +173,6 @@ body.stop-scrolling {
     margin-top: 4px;
     opacity: 0;
     visibility: hidden; }
-  .sweet-alert[data-has-cancel-button=false] button {
-    box-shadow: none !important; }
-  .sweet-alert[data-has-confirm-button=false][data-has-cancel-button=false] {
-    padding-bottom: 40px; }
   .sweet-alert .sa-icon {
     width: 80px;
     height: 80px;
