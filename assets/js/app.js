@@ -339,7 +339,7 @@
           text: 'bilibili.audio 目前仅支持 10 分钟以内视频的转换. 对于其它内容, 您可以尝试下载视频文件后手动转换.',
           type: 'error',
           confirmButtonText: '下载视频'
-        }, function(confirmed) {
+        }, function() {
           window.open('http://www.bilibili.download/video/av' + videoInfo.avid + '/index_' + videoInfo.page + '.html');
         });
       } else if (parseInt(data.status) === 0 && (parseInt(data.process) < 3 ||
@@ -510,6 +510,11 @@
         var matches = $(this).blur().val().match(/av([0-9]+)(\/)?(index_([0-9]+)\.html)?(\?.*)?$/i);
         $(this).val('').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
         if (matches) {
+          videoInfo = {
+            avid: parseInt(matches[1]),
+            page: parseInt(matches[4]),
+            valid: true
+          };
           videoInfo.page = videoInfo.page > 0 && isFinite(videoInfo.page) ? videoInfo.page : 1;
           loadVideoInfo();
         } else {
