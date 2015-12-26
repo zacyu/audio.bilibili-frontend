@@ -236,6 +236,7 @@
       switch(parseInt(data.process)) {
         case 0:
           $('#audio-info .center h3').text('正在等待队列');
+          $('#audio-info .center p').text('在当前转换任务之前有 ' + data.tasks + ' 个任务');
           break;
         case 1:
           $('#audio-info .center h3').text('正在解析视频信息');
@@ -329,7 +330,20 @@
           showRetryAlert();
         }
       }, countDown = false;
-      if (parseInt(data.status) === 0 && (parseInt(data.process) < 3 ||
+      if (parseInt(data.status) === -1) {
+        window.swal({
+          title: '音频任务提交失败',
+          text: 'bilibili.audio 目前仅支持转换 10 分钟以内视频的转换. 对于其它内容, 您可以尝试下载视频文件后手动转换.',
+          type: 'error',
+          showCancelButton: true,
+          cancelButtonText: '取消',
+          confirmButtonText: '下载视频'
+        }, function(confirmed) {
+          if (confirmed) {
+            window.open('http://www.bilibili.download/video/av' + videoInfo.avid + '/index_' + videoInfo.page + '.html');
+          }
+        });
+      } else if (parseInt(data.status) === 0 && (parseInt(data.process) < 3 ||
         parseInt(data.process) === 5 || parseInt(data.retry) === 10)) {
           if (parseInt(new Date().getTime()/1000) - parseInt(data.time) > 120) {
             showRetryAlert();
