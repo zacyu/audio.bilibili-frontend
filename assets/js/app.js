@@ -299,7 +299,7 @@
           $.ajax('http://bilibili.audio/get.php?aid=' + avid + '&p=' + page, {
             method: 'POST',
             dataType: 'json',
-            timeout: 1000,
+            timeout: 2000,
             data: {
               retry: 1
             }
@@ -484,7 +484,7 @@
           $.ajax('http://bilibili.audio/get.php?aid=' + videoInfo.avid + '&p=' + videoInfo.page, {
             method: 'POST',
             dataType: 'json',
-            timeout: 1000,
+            timeout: 2000,
             data: {
               retry: 1
             }
@@ -494,6 +494,9 @@
               $('#audio-info .center .mdl-progress').get(0).MaterialProgress.setProgress(0);
               $('#audio-info .center .mdl-progress').addClass('mdl-progress__indeterminate');
             }
+            delete videoInfo.audio;
+            localStorage.setItem(videoInfo.avid + '/' + videoInfo.page,
+              window.LZString.compress(JSON.stringify(videoInfo)));
             $('#audio-info .center h3').text('正在提交任务');
             $('#audio-info .center p').text('根据服务器负载, 这可能需要一段时间...');
             window.currentTask = generateUUID();
@@ -507,11 +510,6 @@
         var matches = $(this).blur().val().match(/av([0-9]+)(\/)?(index_([0-9]+)\.html)?(\?.*)?$/i);
         $(this).val('').closest('.mdl-textfield').get(0).MaterialTextfield.boundUpdateClassesHandler();
         if (matches) {
-          videoInfo = {
-            avid: parseInt(matches[1]),
-            page: parseInt(matches[4]),
-            valid: true
-          };
           videoInfo.page = videoInfo.page > 0 && isFinite(videoInfo.page) ? videoInfo.page : 1;
           loadVideoInfo();
         } else {
