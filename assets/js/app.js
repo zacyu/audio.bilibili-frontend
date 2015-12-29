@@ -201,9 +201,9 @@
     $('#download-btn').off('click').click(function() {
       window.open(videoInfo.audio.url);
     }).find('.download').text('下载 ' + videoInfo.audio.format +
-      ' 音频 (比特率: ' + videoInfo.audio.quality + ' kbit/s)');
+      ' 音频 (比特率: ' + videoInfo.audio.bitrate + ' kbit/s)');
     $('#reload-btn').prop('disabled', parseInt(new Date().getTime()/1000) -
-      parseInt(videoInfo.audio.time) < 153600);
+      parseInt(videoInfo.audio.ts) < 153600);
   }
 
   function loadAudioInfo(taskId) {
@@ -263,14 +263,21 @@
             ' (' + data.quality + ' kbit/s)');
           break;
         case 5:
-          if (parseInt(data.status)) {
-            videoInfo.audio = data;
+          if (parseInt(data.status) === 1 && data.url) {
+            videoInfo.audio = {
+              format: data.format,
+              url: data.url,
+              bitrate: data.quality,
+              ts: data.time
+            };
             localStorage.setItem(videoInfo.avid + '/' + videoInfo.page,
               window.LZString.compress(JSON.stringify(videoInfo)));
             renderAudioBlock(taskId);
-            break;
-          } else {
+          } else if (parseInt(data.status) === 0) {
             $('#audio-info .center h3').text('发生异常错误');
+          } else {
+            $('#audio-info .center h3').text('正在完成任务');
+            loadAudioInfo(taskId);
           }
           break;
         default:
