@@ -350,7 +350,9 @@
           window.open('http://www.bilibili.download/video/av' + videoInfo.avid + '/index_' + videoInfo.page + '.html');
         });
       } else if (parseInt(data.status) === 0 && (parseInt(data.process) < 3 ||
-        parseInt(data.process) === 5 || parseInt(data.retry) === 10)) {
+        parseInt(data.process) === 5 || parseInt(data.retry) === 10) ||
+        parseInt(data.process) === 2 &&
+        parseInt(new Date().getTime()/1000) - parseInt(data.time) > 600) {
           if (parseInt(new Date().getTime()/1000) - parseInt(data.time) > 120) {
             showRetryAlert();
           } else {
