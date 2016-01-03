@@ -151,6 +151,10 @@
           return false;
         }
         ajaxBusy = false;
+        if (typeof data.list == 'object' && data.list.length < videoInfo.page) {
+          data.error = 'no such doc';
+          data.code = -404;
+        }
         if (!data.error) {
           videoInfo = $.extend(videoInfo, {
             title: data.title,
@@ -426,6 +430,30 @@
     } else {
       $('#refresh-btn').addClass('hidden');
     }
+    if (videoInfo.type.match(/电影|连载|完结|电视剧|资讯|服饰|动画/)) {
+      window.swal({
+        title: '提取视频音频',
+        text: '您当前查看的视频所在分区 (电影、电视剧、时尚等) 通常不需要提取' +
+          '音频, 如果您只需要下载视频内容, 不需要通过 bilibili.audio 转换音频. ' +
+          '滥用此功能将会导致您被 bilibili.audio 禁止使用. 确认要继续吗?',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '下载视频',
+        cancelButtonText: '继续提取音频'
+      }, function(confirmed) {
+        if (confirmed) {
+          showQueryPage();
+          window.open('http://www.bilibili.download/video/av' + videoInfo.avid + '/index_' + videoInfo.page + '.html');
+        } else {
+          initAudio();
+        }
+      });
+    } else {
+      initAudio();
+    }
+  }
+
+  function initAudio() {
     window.currentTask = generateUUID();
     loadAudioInfo(window.currentTask);
     if ($('#audio-info .center .mdl-progress').get(0).MaterialProgress) {
