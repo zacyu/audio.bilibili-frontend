@@ -442,8 +442,8 @@
         cancelButtonText: '继续提取音频'
       }, function(confirmed) {
         if (confirmed) {
-          showQueryPage();
           window.open('http://www.bilibili.download/video/av' + videoInfo.avid + '/index_' + videoInfo.page + '.html');
+          showQueryPage();
         } else {
           initAudio();
         }
